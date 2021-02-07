@@ -14,7 +14,7 @@ const PREFIX = prefix.PREFIX;
 
 client.commands = new Collection();
 
-const Commands = fs.readdirSync('./src/commands').filter(file => file.endsWith('.js'));
+const Commands = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 //Commands Folder
 for (const file of Commands) {
