@@ -1,3 +1,20 @@
+const http = require('http');
+const express = require('express'), {post, get} = require('superagent'), app = express();
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+var server = require('http').createServer(app);
+app.get("/", (request, response) => {
+  console.log(Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+
+const listener = server.listen(process.env.PORT, function() {
+  console.log('Your app is listening on port ' + listener.address().port);
+});
+
+app.listen(3000);
+
+
 const fs = require("fs");
 
 require('dotenv').config();
@@ -52,17 +69,19 @@ client.on('guildMemberAdd', (member) => {
     const id = member.user.id;
 
     let channel = member.guild.channels.cache.find(ch => ch.id === '807262981657460776');
+    // let channel = member.guild.channels.cache.find(ch => ch.id === '807544047786000417');
     if(!channel) return;
 
     embed
     .setTitle(":tada: Welcome to the GenXclub Server")
     .setColor(0xF1C40F)
-    .setDescription(`<@${id}>\nYou're Set to get the "Chosen One" role in 1 Minute, Please be patient - Just Part of Standard Protocols.\n\nEven after few minutes if you aren't able to access Community Space <#806193348669866054>.\n\nPlease contact <@&806141565964648448> for Immediate Assistance.`);
+    .setDescription(`<@${id}>\nYou're Set to get the "Chosen One" role in 1 Minute, Please be patient - Just Part of Standard Protocols.\n\nEven after few minutes if you aren't able to access Community Space <#806193348669866054>.\n\nPlease contact **@Ninja** for Immediate Assistance.`);
     let role = member.guild.roles.cache.find(r => r.name === "Chosen One");
 
     setTimeout(setRole, 60000);
+    member.send(embed);
     channel.send(embed).then(msg => {
-        msg.delete({ timeout: 30000 });
+        msg.delete({ timeout: 50000 });
     });
 
     function setRole (embed) {
@@ -93,4 +112,4 @@ client.on('message', (message) => {
     }
 });
 
-client.login(process.env.BEBOT_TOKEN);
+client.login(process.env.LEXIS_TOKEN);
