@@ -1,0 +1,28 @@
+{
+  "name": "Lexis-Bot",
+  "version": "1.0.0",
+  "description": "Lexis Bot for GenXclub",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/bot.js",
+    "dev": "nodemon ./src/bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenXclub/Lexis.git"
+  },
+  "keywords": [],
+  "author": "StealthAdder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GenXclub/Lexis/issues"
+  },
+  "homepage": "https://github.com/GenXclub/Lexis#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {}
+}
