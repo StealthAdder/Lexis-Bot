@@ -75,7 +75,7 @@ client.on('guildMemberAdd', (member) => {
     embed
     .setTitle(":tada: Welcome to the GenXclub Server")
     .setColor(0xF1C40F)
-    .setDescription(`<@${id}>\nYou're Set to get the "Chosen One" role in 1 Minute, Please be patient - Just Part of Standard Protocols.\n\nEven after few minutes if you aren't able to access Community Space <#806193348669866054>.\n\nPlease contact **@Ninja** for Immediate Assistance.`);
+    .setDescription(`<@${id}>\nYou're Set to get the "Chosen One" role in 1 Minute, Please be patient - Just Part of Standard Protocols.\n\nEven after few minutes if you aren't able to access Community Space <#806193348669866054>.\n\nPlease contact **@Ninja** for Immediate Assistance.\n\n**In the Mean While Check out these links to know more about us and what we do!**\nGenXclub Instagram: https://www.instagram.com/genxclub/\nTelegram Invite link: https://t.me/genXclub\nYoutube: https://bit.ly/313CeK9\nGitHub: https://github.com/GenXclub\nWebSite: https://genxclub.github.io/index.html`);
     let role = member.guild.roles.cache.find(r => r.name === "Chosen One");
 
     setTimeout(setRole, 60000);
