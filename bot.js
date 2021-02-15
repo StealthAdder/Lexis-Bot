@@ -42,10 +42,9 @@ for (const file of Commands) {
 console.log(Commands.length+' files loaded in [ commands ] folder')
 
 client.on('ready', () => {
+    client.user.setActivity("GUARDIAN", { type: "PLAYING"});
     console.log(`${client.user.tag} has Powered Up!!!`);
 });
-
-// Auto Role Assignment.
 
 // Commands folder access.
 client.on('message', async(message) => {
