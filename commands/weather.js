@@ -1,11 +1,11 @@
 module.exports.run = async (client,message,args,messageArray) => {
-
+    const prefix = require("./prefix.json");
     const { MessageEmbed } = require('discord.js');
     const fetch = require('node-fetch');
     const embed = new MessageEmbed();
     const city = messageArray.slice(1).join(' ');
 
-    const API_KEY = 'b6bc56974291c659a7565e5d91cb956b';
+    const API_KEY = prefix.OpenAPI;
 
     const api = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=imperial`;
 
