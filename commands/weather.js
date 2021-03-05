@@ -1,5 +1,5 @@
 module.exports.run = async (client,message,args,messageArray) => {
-    const prefix = require("./prefix.json");
+    const prefix = require("../prefix.json");
     const { MessageEmbed } = require('discord.js');
     const fetch = require('node-fetch');
     const embed = new MessageEmbed();
