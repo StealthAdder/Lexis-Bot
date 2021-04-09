@@ -39,6 +39,7 @@ router.post('/signin', async (req, res) => {
     } else {
       res.send({
         exists: true,
+        info: result,
       });
     }
   } catch (error) {
@@ -76,8 +77,9 @@ router.post('/energize', async (req, res) => {
       };
       const upd = await userData.findByIdAndUpdate(_id, updates, options);
       console.log(upd);
+      res.send({ captured: true, info: upd });
     } else {
-      console.log(`Low Energy`);
+      res.send({ captured: false });
     }
   } catch (error) {
     console.error(error);

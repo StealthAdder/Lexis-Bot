@@ -7,10 +7,11 @@ module.exports.run = async (client, message, args, messageArray) => {
   const embed = new MessageEmbed();
   console.log(args);
   console.log(messageArray);
-  // message.delete();
+  const msg = message;
+  setTimeout(() => message.delete(), 3000);
 
   // GET Pokemons
-  const getPokemon = (PokemonName) => {
+  const getPokemon = (PokemonName, credits) => {
     const api = `https://pokeapi.co/api/v2/pokemon/${PokemonName}`;
     fetch(api)
       .then((response) => {
@@ -40,6 +41,13 @@ module.exports.run = async (client, message, args, messageArray) => {
         // Energy to catch the pokemon
         const energy = Math.floor(base_experience + weight / height);
         console.log(energy);
+
+        if (credits <= energy) {
+          var energylvlmsg = `⚠️Low Energy Level: ${credits}.\nIt's a risk to catch the pokémon now!`;
+        } else {
+          energylvlmsg = `You're Energy Level: ${credits}.\nTry to catch this pokémon!`;
+        }
+
         embed
           .setAuthor(
             '⚡Poké Ball Ready!⚡',
@@ -52,18 +60,24 @@ module.exports.run = async (client, message, args, messageArray) => {
               .toString()
               .toUpperCase()}**\nEnergy Needed to Catch: **${energy}**`
           )
-          .setColor(0x00ae86);
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          )
+          .setFooter(`${energylvlmsg}`, msg.author.avatarURL());
 
-        message.channel.send(embed).then((message) => {
-          message
+        msg.channel.send(embed).then((msg) => {
+          msg
             .react('<:PokeBall:829788143796224020>')
+            .then(() => msg.react('❌'))
             .catch(() => console.error('ERROR'));
 
           client.on('messageReactionAdd', async (reaction, user) => {
             const { name } = reaction.emoji;
             let userid = user.id;
             const member = reaction.message.guild.members.cache.get(userid);
-
+            // console.log(name);
             // Now Purchase processing
             if (member.user.bot === true) {
               return;
@@ -86,11 +100,53 @@ module.exports.run = async (client, message, args, messageArray) => {
                       }
                     );
                     const energizeRes = await result.json();
-                    console.log(energizeRes);
+                    if (energizeRes.captured === false) {
+                      embed
+                        .setAuthor(
+                          '⚡Warning Trainer⚡',
+                          'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+                        )
+                        .setImage(sprites.front_default)
+                        .setTitle(':warning:Low Energy Level!')
+                        .setDescription(
+                          `**Couldn't capture ${pokemonName.toUpperCase()}, It Escaped!!!**`
+                        )
+                        .setColor(
+                          `#${Math.floor(Math.random() * 16777215).toString(
+                            16
+                          )}`
+                        )
+                        .setFooter('', '');
+                    } else {
+                      if (energizeRes.captured === true) {
+                        embed
+                          .setAuthor(
+                            '⚡Good work Trainer!⚡',
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+                          )
+                          .setImage(sprites.front_default)
+                          .setTitle(`${pokemonName.toUpperCase()} Captured`)
+                          .setDescription(
+                            `**You have captured ${pokemonName.toUpperCase()} successfully.\nSpent Energy: ${energy}\nRemaining Energy: ${
+                              energizeRes.info.credits
+                            }**`
+                          )
+                          .setColor(
+                            `#${Math.floor((Math.random() * 0xffffff) << 0)
+                              .toString(16)
+                              .padStart(6, '0')}`
+                          )
+                          .setFooter('', '');
+                      }
+                    }
+                    msg.channel.send(embed);
                   };
                   energize({ id, energy, userid, pokemonName });
                   // console.log(member);
-                  await reaction.message.delete();
+                  reaction.message.delete();
+                  break;
+                case '❌':
+                  reaction.message.delete();
                   break;
               }
             }
@@ -102,23 +158,28 @@ module.exports.run = async (client, message, args, messageArray) => {
   // SIGN UP
   if (args[0] === 'signup') {
     embed
-      .setTitle('Sign Up - Pokemon Hunt')
+      .setTitle('Sign Up - Pokémon Hunt')
       .setAuthor(
         'Welcome Trainer!',
         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
       )
-      .setColor(0x00ae86)
-      .setDescription('React to Enter the Pokemon World');
-    message.channel.send(embed).then((message) => message.react('✅'));
+      .setColor(
+        `#${Math.floor((Math.random() * 0xffffff) << 0)
+          .toString(16)
+          .padStart(6, '0')}`
+      )
+      .setDescription('React to Enter the Pokémon World');
+    msg.channel.send(embed).then((msg) => msg.react('✅'));
     // On https://cdn.discordapp.com/avatars/"+message.author.id+"/"+message.author.avatar+".jpeg
     client.on('messageReactionAdd', async (reaction, user) => {
       const { name } = reaction.emoji;
       const member = reaction.message.guild.members.cache.get(user.id);
+      // console.log(member);
       if (member.user.bot) {
         return;
       }
       switch (name) {
-        case 'PokeBall':
+        case '✅':
           let userid = user.id;
           const signup = async (info) => {
             let result = await fetch(`http://localhost:3000/pokemon/signup`, {
@@ -129,33 +190,30 @@ module.exports.run = async (client, message, args, messageArray) => {
               body: JSON.stringify(info),
             });
             const signupRes = await result.json();
-            console.log(signupRes);
+            // console.log(signupRes);
             if (signupRes.exists == true) {
               embed
                 .setAuthor(
-                  'Hey Trainer!',
+                  `Hey ${member.user.username}!`,
                   'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
                 )
                 .setTitle('')
                 .setDescription(
-                  '**You are already a member of the Pokemon Universe!\n If lost type `?poke help`**'
+                  '**You are already a member of the Pokémon Universe!\n If lost type `?poke help`**'
                 );
-              message.channel.send(embed);
+              msg.channel.send(embed);
             }
-            await reaction.message.delete();
           };
-
           signup({ userid });
           console.log(`User ID: ${userid}`);
+          // await deletion to reacted message.
+          reaction.message.delete();
           break;
       }
     });
-  }
-
-  // RANDOM POKEMON TO COLLECT
-
-  if (args[0] === 'search') {
-    let userid = message.author.id;
+  } else if (args[0] === 'search') {
+    // RANDOM POKEMON TO COLLECT
+    let userid = msg.author.id;
     // check if the user is a member
     const signin = async (info) => {
       let result = await fetch(`http://localhost:3000/pokemon/signin`, {
@@ -168,10 +226,12 @@ module.exports.run = async (client, message, args, messageArray) => {
       let signinRes = await result.json();
       // console.log(signinRes);
       if (signinRes.exists === true) {
+        let credits = signinRes.info[0].credits;
+        console.log(credits);
         var PokemonName;
         // The API says 898 count
         PokemonName = Math.floor(Math.random() * (898 - 1 + 1)) + 1;
-        getPokemon(PokemonName);
+        getPokemon(PokemonName, credits);
         // console.log(PokemonName);
       } else {
         embed
@@ -182,15 +242,18 @@ module.exports.run = async (client, message, args, messageArray) => {
             'Welcome Trainer!',
             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
           )
-          .setColor(0x00ae86);
-        message.channel.send(embed);
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          );
+        msg.channel.send(embed);
       }
     };
     signin({ userid });
-  } else {
-    // console.log(args[0]);
-    let userid = message.author.id;
-    let pokemonName = args[0];
+  } else if (args[0] === 'help') {
+    let userid = msg.author.id;
+    // check if the user is a member
     const signin = async (info) => {
       let result = await fetch(`http://localhost:3000/pokemon/signin`, {
         method: 'POST',
@@ -202,41 +265,179 @@ module.exports.run = async (client, message, args, messageArray) => {
       let signinRes = await result.json();
       // console.log(signinRes);
       if (signinRes.exists === true) {
+        let credits = signinRes.info[0].credits;
+        // console.log(credits);
+        embed
+          .setDescription(
+            "**`?poke signup` Quickly Join the Pokémon Journey.\n\n`?poke search` Search for Pokémon near you & try to capture by spending Energy Currency.\n\n`?poke energy` 🛠️Search for food in the wild, Energy Currency is very important in you're quest to capture pokémon's.\n\n`?poke inv` 🛠️Get Information of Inventory,\ni.e. Energy LVL, Pokémon Collections, Supplies, etc.**"
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          )
+          .setTitle(`ℹ️ Help Section`)
+          .setAuthor(
+            `Hello ${msg.author.username}!`,
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setFooter(
+            `Powered by JavaScript, Express-RESTful-API, MongoDB Cloud Cluster,\nDiscord.Js, PokéAPI, Hosted on - Repl.it`,
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          );
+      } else {
+        embed
+          .setDescription(
+            "**It seems you are lost in the wild.\nLet's get you you're Trainer ID.\nThis ID helps universe to know you're collections and credit Information\n Let's start by Sending.**\n`?poke signup`"
+          )
+          .setAuthor(
+            'Welcome Trainer!',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          );
+      }
+      msg.channel.send(embed);
+    };
+    signin({ userid });
+  } else if (args[0] === 'energy') {
+    let userid = msg.author.id;
+    // check if the user is a member
+    const signin = async (info) => {
+      let result = await fetch(`http://localhost:3000/pokemon/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(info),
+      });
+      let signinRes = await result.json();
+      // console.log(signinRes);
+      if (signinRes.exists === true) {
+        embed
+          .setDescription('Recharging')
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          )
+          .setTitle(`Energy Level Hunt`)
+          .setAuthor(
+            `Hello ${msg.author.username}!`,
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          );
+      } else {
+        embed
+          .setDescription(
+            "**It seems you are lost in the wild.\nLet's get you you're Trainer ID.\nThis ID helps universe to know you're collections and credit Information\n Let's start by Sending.**\n`?poke signup`"
+          )
+          .setAuthor(
+            'Welcome Trainer!',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          );
+      }
+      msg.channel.send(embed);
+    };
+    signin({ userid });
+  } else if (args[0] === 'help') {
+    let userid = msg.author.id;
+    // check if the user is a member
+    const signin = async (info) => {
+      let result = await fetch(`http://localhost:3000/pokemon/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(info),
+      });
+      let signinRes = await result.json();
+      // console.log(signinRes);
+      if (signinRes.exists === true) {
+        let credits = signinRes.info[0].credits;
+        // console.log(credits);
+        embed
+          .setDescription(
+            "**`?poke signup` Quickly Join the Pokémon Journey.\n\n`?poke search` Search for Pokémon near you & try to capture by spending Energy Currency.\n\n`?poke energy` 🛠️Search for food in the wild, Energy Currency is very important in you're quest to capture pokémon's.\n\n`?poke inv` 🛠️Get Information of Inventory,\ni.e. Energy LVL, Pokémon Collections, Supplies, etc.**"
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          )
+          .setTitle(`ℹ️ Help Section`)
+          .setAuthor(
+            `Hello ${msg.author.username}!`,
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setFooter(
+            `Powered by JavaScript, Express-RESTful-API, MongoDB Cloud Cluster,\nDiscord.Js, PokéAPI, Hosted on - Repl.it`,
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          );
+      } else {
+        embed
+          .setDescription(
+            "**It seems you are lost in the wild.\nLet's get you you're Trainer ID.\nThis ID helps universe to know you're collections and credit Information\n Let's start by Sending.**\n`?poke signup`"
+          )
+          .setAuthor(
+            'Welcome Trainer!',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          );
+      }
+      msg.channel.send(embed);
+    };
+    signin({ userid });
+  } else {
+    let userid = msg.author.id;
+    // check if the user is a member
+    const signin = async (info) => {
+      let result = await fetch(`http://localhost:3000/pokemon/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(info),
+      });
+      let signinRes = await result.json();
+      // console.log(signinRes);
+      if (signinRes.exists === true) {
+        let credits = signinRes.info[0].credits;
+        console.log(credits);
+        var PokemonName;
         // The API says 898 count
-        getPokemon(pokemonName);
-        // console.log(PokemonName);
+        PokemonName = args[0];
+        getPokemon(PokemonName, credits);
+      } else {
+        embed
+          .setDescription(
+            "**It seems you are lost in the wild.\nLet's get you you're Trainer ID.\nThis ID helps universe to know you're collections and credit Information\n Let's start by Sending.**\n`?poke signup`"
+          )
+          .setAuthor(
+            'Welcome Trainer!',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+          )
+          .setColor(
+            `#${Math.floor((Math.random() * 0xffffff) << 0)
+              .toString(16)
+              .padStart(6, '0')}`
+          );
+        msg.channel.send(embed);
       }
     };
     signin({ userid });
   }
-
-  //CREDIT CHECK
-  // if (args[0] === 'cred') {
-  //   let username = message.author.username;
-  //   let userid = message.author.id;
-
-  //   const getCredInfo = async (info) => {
-  //     let result = await fetch(`http://localhost:3000/pokemon/signin`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(info),
-  //     });
-  //     let signinRes = await result.json();
-  //     let credit = signinRes.result[0].credits;
-  //     embed
-  //       .setAuthor(
-  //         `Welcome ${username}!,`,
-  //         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
-  //       )
-  //       .setColor(0x00ae86)
-  //       .setDescription(`**Credit Balance: ${credit}**`);
-  //     message.channel.send(embed);
-  //   };
-
-  //   getCredInfo({ userid });
-  // }
 
   //
 };
