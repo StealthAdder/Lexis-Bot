@@ -64,23 +64,44 @@ router.post('/energize', async (req, res) => {
 
     if (currentCredit >= energy) {
       // balance
-      const options = { new: true };
+      let options = { new: true };
       currentCredit = currentCredit - energy;
 
-      console.log(`Catch pokemon`);
-      console.log(`Balance: ${currentCredit}`);
-      const updates = {
+      // console.log(`Catch pokemon`);
+      // console.log(`Balance: ${currentCredit}`);
+      let updates = {
         credits: currentCredit,
         $push: {
           pokemonCollection: { id: id, name: pokemonName },
         },
       };
-      const upd = await userData.findByIdAndUpdate(_id, updates, options);
-      console.log(upd);
+      let upd = await userData.findByIdAndUpdate(_id, updates, options);
+      // console.log(upd);
       res.send({ captured: true, info: upd });
     } else {
       res.send({ captured: false });
     }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+router.post('/getEnergy', async (req, res) => {
+  try {
+    let result = await userData.find({ userid: req.body.userid });
+    // console.log(result[0]._id);
+    let _id = result[0]._id;
+    let currentCredit = result[0].credits;
+    // console.log(currentCredit);
+    let updates = {
+      credits: currentCredit + 200,
+    };
+    let options = { new: true };
+    let changeEnergy = await userData.findByIdAndUpdate(_id, updates, options);
+    res.send({
+      recharged: true,
+      info: changeEnergy,
+    });
   } catch (error) {
     console.error(error);
   }

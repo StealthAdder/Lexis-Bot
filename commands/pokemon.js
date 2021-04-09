@@ -11,7 +11,7 @@ module.exports.run = async (client, message, args, messageArray) => {
   setTimeout(() => message.delete(), 3000);
 
   // GET Pokemons
-  const getPokemon = (PokemonName, credits) => {
+  const getPokemon = async (PokemonName, credits) => {
     const api = `https://pokeapi.co/api/v2/pokemon/${PokemonName}`;
     fetch(api)
       .then((response) => {
@@ -77,13 +77,14 @@ module.exports.run = async (client, message, args, messageArray) => {
             const { name } = reaction.emoji;
             let userid = user.id;
             const member = reaction.message.guild.members.cache.get(userid);
-            // console.log(name);
+
             // Now Purchase processing
             if (member.user.bot === true) {
               return;
             } else {
               switch (name) {
                 case 'PokeBall':
+                  console.log(name);
                   // console.log(name);
                   // console.log(`User: ${userid}`);
                   // console.log(`PokemonID: ${id}`);
@@ -103,11 +104,11 @@ module.exports.run = async (client, message, args, messageArray) => {
                     if (energizeRes.captured === false) {
                       embed
                         .setAuthor(
-                          '⚡Warning Trainer⚡',
+                          `⚡Warning ${member.user.username}⚡`,
                           'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
                         )
                         .setImage(sprites.front_default)
-                        .setTitle(':warning:Low Energy Level!')
+                        .setTitle('⚠️Low Energy Level!')
                         .setDescription(
                           `**Couldn't capture ${pokemonName.toUpperCase()}, It Escaped!!!**`
                         )
@@ -121,7 +122,7 @@ module.exports.run = async (client, message, args, messageArray) => {
                       if (energizeRes.captured === true) {
                         embed
                           .setAuthor(
-                            '⚡Good work Trainer!⚡',
+                            `⚡Nice Work ${member.user.username}⚡`,
                             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
                           )
                           .setImage(sprites.front_default)
@@ -140,14 +141,17 @@ module.exports.run = async (client, message, args, messageArray) => {
                       }
                     }
                     msg.channel.send(embed);
+                    reaction.message.delete();
                   };
                   energize({ id, energy, userid, pokemonName });
                   // console.log(member);
-                  reaction.message.delete();
+                  // var reactionMessage = await reaction.message;
+
                   break;
                 case '❌':
                   reaction.message.delete();
-                  break;
+                default:
+                  reaction.message.delet();
               }
             }
           });
@@ -157,10 +161,12 @@ module.exports.run = async (client, message, args, messageArray) => {
 
   // SIGN UP
   if (args[0] === 'signup') {
+    // SIGNUP command
+
     embed
       .setTitle('Sign Up - Pokémon Hunt')
       .setAuthor(
-        'Welcome Trainer!',
+        `Welcome ${msg.author.username}!`,
         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
       )
       .setColor(
@@ -213,6 +219,7 @@ module.exports.run = async (client, message, args, messageArray) => {
     });
   } else if (args[0] === 'search') {
     // RANDOM POKEMON TO COLLECT
+
     let userid = msg.author.id;
     // check if the user is a member
     const signin = async (info) => {
@@ -239,7 +246,7 @@ module.exports.run = async (client, message, args, messageArray) => {
             "**It seems you are lost in the wild.\nLet's get you you're Trainer ID.\nThis ID helps universe to know you're collections and credit Information\n Let's start by Sending.**\n`?poke signup`"
           )
           .setAuthor(
-            'Welcome Trainer!',
+            `Welcome ${msg.author.username}!`,
             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
           )
           .setColor(
@@ -252,6 +259,8 @@ module.exports.run = async (client, message, args, messageArray) => {
     };
     signin({ userid });
   } else if (args[0] === 'help') {
+    // HELP command
+
     let userid = msg.author.id;
     // check if the user is a member
     const signin = async (info) => {
@@ -304,9 +313,12 @@ module.exports.run = async (client, message, args, messageArray) => {
     };
     signin({ userid });
   } else if (args[0] === 'energy') {
+    // ENERGY command
+
     let userid = msg.author.id;
     // check if the user is a member
     const signin = async (info) => {
+      let rechargeEmbed = new MessageEmbed();
       let result = await fetch(`http://localhost:3000/pokemon/signin`, {
         method: 'POST',
         headers: {
@@ -317,18 +329,66 @@ module.exports.run = async (client, message, args, messageArray) => {
       let signinRes = await result.json();
       // console.log(signinRes);
       if (signinRes.exists === true) {
-        embed
-          .setDescription('Recharging')
+        rechargeEmbed
+          .setDescription('Recharging....')
           .setColor(
             `#${Math.floor((Math.random() * 0xffffff) << 0)
               .toString(16)
               .padStart(6, '0')}`
           )
-          .setTitle(`Energy Level Hunt`)
+          .setImage('https://i.gifer.com/Lc8U.gif')
           .setAuthor(
             `Hello ${msg.author.username}!`,
             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
           );
+        let send = await msg.channel.send(rechargeEmbed);
+        // Energy Requested.
+        const getEnergy = async (info) => {
+          let result = await fetch(`http://localhost:3000/pokemon/getEnergy`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(info),
+          });
+          let getEnergyRes = await result.json();
+          // check for some ackn
+          console.log(getEnergyRes);
+          if (getEnergyRes.recharged === true) {
+            embed
+              .setDescription('Recharged!!!')
+              .setColor(
+                `#${Math.floor((Math.random() * 0xffffff) << 0)
+                  .toString(16)
+                  .padStart(6, '0')}`
+              )
+              .setImage('')
+              .setTitle(`Energy Level: ${getEnergyRes.info.credits}`)
+              .setAuthor(
+                `Hello ${msg.author.username}!`,
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+              );
+          } else {
+            embed
+              .setDescription('Recharging Failed!')
+              .setColor(
+                `#${Math.floor((Math.random() * 0xffffff) << 0)
+                  .toString(16)
+                  .padStart(6, '0')}`
+              )
+              .setTitle('Try Again...')
+              .setAuthor(
+                `Sorry ${msg.author.username}!`,
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/1026px-Pok%C3%A9_Ball_icon.svg.png'
+              );
+          }
+
+          setTimeout(() => {
+            send.delete();
+            msg.channel.send(embed);
+          }, 5000);
+        };
+        getEnergy({ userid });
       } else {
         embed
           .setDescription(
@@ -343,8 +403,8 @@ module.exports.run = async (client, message, args, messageArray) => {
               .toString(16)
               .padStart(6, '0')}`
           );
+        msg.channel.send(embed);
       }
-      msg.channel.send(embed);
     };
     signin({ userid });
   } else if (args[0] === 'help') {
