@@ -169,4 +169,4 @@ client.on('message', (message) => {
   }
 });
 
-client.login(process.env.BEBOT_TOKEN);
+client.login(process.env.LEXIS_TOKEN);
