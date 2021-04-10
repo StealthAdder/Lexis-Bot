@@ -1,20 +1,41 @@
 const http = require('http');
-const express = require('express'),
-  { post, get } = require('superagent'),
-  app = express();
+const express = require('express');
+const morgan = require('morgan');
+const connectDB = require('./api/config/db');
+const dotenv = require('dotenv');
+dotenv.config();
+connectDB();
+
+const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 var server = require('http').createServer(app);
-app.get('/', (request, response) => {
+
+if (process.env.NODE_ENV === 'development') {
+  // Middleware used to log requests.
+  app.use(morgan('dev'));
+}
+
+app.get('/', (req, res) => {
   console.log(Date.now() + ' Ping Received');
-  response.sendStatus(200);
+  res.sendStatus(200);
 });
 
-const listener = server.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+// Routes
+app.use('/pokemon', require('./api/routes/pokemon'));
+
+// const listener = server.listen(process.env.PORT, function () {
+//   console.log('Your app is listening on port ' + listener.address().port);
+// });
+server.listen(process.env.PORT, () => {
+  console.log(`Your app is listening on port ${server.address().port}`);
 });
 
-app.listen(3000);
+app.listen(3000, () => {
+  console.log(`Express Server Running..`);
+});
 
 const fs = require('fs');
 
@@ -33,6 +54,9 @@ const { clear } = require('console');
 const client = new Client({
   partials: ['MESSAGE', 'REACTION'],
 });
+// {
+//   partials: ['MESSAGE', 'REACTION'],
+// }
 const embed = new MessageEmbed();
 const PREFIX = prefix.PREFIX;
 
@@ -145,4 +169,4 @@ client.on('message', (message) => {
   }
 });
 
-client.login(process.env.LEXIS_TOKEN);
+client.login(process.env.BEBOT_TOKEN);
