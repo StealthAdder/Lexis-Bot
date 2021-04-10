@@ -51,7 +51,9 @@ const {
   Collection,
 } = require('discord.js');
 const { clear } = require('console');
-const client = new Client();
+const client = new Client({
+  partials: ['MESSAGE', 'REACTION'],
+});
 // {
 //   partials: ['MESSAGE', 'REACTION'],
 // }

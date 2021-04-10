@@ -31,7 +31,7 @@ router.post('/signin', async (req, res) => {
   // console.log(req.body);
   try {
     let result = await userData.find({ userid: req.body.userid });
-    console.log(typeof result);
+    // console.log(typeof result);
     if (result.length === 0) {
       res.send({
         exists: false,
