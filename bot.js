@@ -33,7 +33,7 @@ server.listen(process.env.PORT, () => {
   console.log(`Your app is listening on port ${server.address().port}`);
 });
 
-app.listen(3000, 'localhost', () => {
+app.listen(3000, () => {
   console.log(`Express Server Running..`);
 });
 

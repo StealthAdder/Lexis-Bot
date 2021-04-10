@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
 
 const pokemonCollectionSchema = new mongoose.Schema({
-  id: {
+  pokeid: {
     type: String,
-    unique: true,
+    sparse: true,
   },
   name: {
     type: String,
-    unique: true,
   },
 });
 

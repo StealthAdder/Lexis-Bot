@@ -4,7 +4,7 @@ const userData = require('../models/userData');
 
 // SIGN UP
 router.post('/signup', async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   let info = {
     userid: req.body.userid,
   };
@@ -50,7 +50,7 @@ router.post('/signin', async (req, res) => {
 //Catch Pokemon by using energy!
 router.post('/energize', async (req, res) => {
   // console.log(req.body);
-  let id = req.body.id;
+  let pokeid = req.body.id;
   let pokemonName = req.body.pokemonName;
   let energy = req.body.energy;
   // console.log(pokemonName);
@@ -72,7 +72,7 @@ router.post('/energize', async (req, res) => {
       let updates = {
         credits: currentCredit,
         $push: {
-          pokemonCollection: { id: id, name: pokemonName },
+          pokemonCollection: { pokeid: pokeid, name: pokemonName },
         },
       };
       let upd = await userData.findByIdAndUpdate(_id, updates, options);
