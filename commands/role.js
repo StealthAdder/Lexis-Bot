@@ -59,7 +59,6 @@ module.exports.run = async (client, message, args, messageArray) => {
             var role = message.guild.roles.cache.find(
               (r) => r.name === 'Player'
             );
-            console.log('Player');
             if (member.roles.cache.some((r) => ['Player'].includes(r.name))) {
               requestInfo.setTitle('Role Already Exists').setColor(
                 `#${Math.floor((Math.random() * 0xffffff) << 0)
