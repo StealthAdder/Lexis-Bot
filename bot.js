@@ -1,10 +1,8 @@
 const http = require('http');
 const express = require('express');
 const morgan = require('morgan');
-const connectDB = require('./api/config/db');
 const dotenv = require('dotenv');
 dotenv.config();
-connectDB();
 
 const app = express();
 
@@ -23,12 +21,6 @@ app.get('/', (req, res) => {
   res.sendStatus(200);
 });
 
-// Routes
-app.use('/pokemon', require('./api/routes/pokemon'));
-
-// const listener = server.listen(process.env.PORT, function () {
-//   console.log('Your app is listening on port ' + listener.address().port);
-// });
 server.listen(process.env.PORT, () => {
   console.log(`Your app is listening on port ${server.address().port}`);
 });
